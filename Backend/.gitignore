@@ -1,0 +1,11 @@
+# pyc files
+
+__pycache__/
+
+# Virtual Env
+
+venv/
+
+# vscode
+
+.vscode/
