@@ -1,4 +1,3 @@
-import json
 from typing import List
 
 # Library
@@ -55,7 +54,7 @@ class LoginRequired:
                 detail={"success": False, "message": "Invalid token"},
                 status_code=403,
             )
-        except Exception as e:
+        except Exception:
             raise CustomHTTPException(
                 detail={"success": False, "message": "Token not provided or invalid"},
                 status_code=400,

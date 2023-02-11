@@ -1,13 +1,19 @@
+import os
+
 # From Library
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Imports From File
 from app.core.utils.helper_classes import CustomHTTPException
 from app.core.utils.helpers import handle_decoding_error
 from app.routers.auth import router as auth_router
 
-app = FastAPI(exception_handlers={CustomHTTPException: handle_decoding_error})
+app = FastAPI(debug=os.getenv("APP_ENV") == "development")
+app.add_exception_handler(CustomHTTPException, handle_decoding_error)
 
 app.add_middleware(
     CORSMiddleware,
@@ -20,7 +26,7 @@ app.add_middleware(
 app.include_router(auth_router)
 
 
-@app.get("/")
-@app.get("/health")
+@app.get("/", name="Health", tags=["Health"])
+@app.get("/health", name="Health", tags=["Health"])
 def health():
     return "working"

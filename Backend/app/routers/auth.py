@@ -1,5 +1,3 @@
-import json
-
 # Library Imports
 from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
@@ -17,8 +15,8 @@ router = APIRouter(prefix="/auth")
 security = HTTPBasic()
 
 
-@router.get("/")
-@router.get("/health")
+@router.get("/", name="Auth Router Health", tags=["Health"])
+@router.get("/health", name="Auth Router Health", tags=["Health"])
 def router_test():
     return "Auth Router Working"
 
@@ -53,12 +51,12 @@ def read_current_user(credentials: HTTPBasicCredentials = Depends(security)):
             break
     if verified_user is None:
         return JSONResponse(
-            content=json.dumps({"success": False, "message": "User Not Found"}),
-            status_code=400,
+            content={"success": False, "message": "User Not Found"},
+            status_code=404,
         )
     if verified_user.get("password") != password:
         return JSONResponse(
-            content=json.dumps({"success": False, "message": "Credentials Mismatch"}),
+            content={"success": False, "message": "Credentials Mismatch"},
             status_code=403,
         )
     token = sign_jwt(verified_user.get("id"), verified_user.get("role"))
@@ -72,6 +70,7 @@ def read_current_user(credentials: HTTPBasicCredentials = Depends(security)):
         sign,
         httponly=True,
         secure=True,
+        samesite=Config.SAME_SITE_POLICY,
         expires=Config.ACCESS_TOKEN_EXPIRE_MINUTES * 60 + 300,
     )
     return response

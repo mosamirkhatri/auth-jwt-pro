@@ -1,5 +1,13 @@
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import AppRouter from "./router/AppRouter";
+
 function App() {
-  return <div>Authentication Test</div>;
+  return (
+    <BrowserRouter>
+      <AppRouter />
+    </BrowserRouter>
+  );
 }
 
 export default App;
