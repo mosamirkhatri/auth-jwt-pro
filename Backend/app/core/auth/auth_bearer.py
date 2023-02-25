@@ -7,6 +7,7 @@ import jwt
 
 # Imports from files
 from .auth_handler import decode_jwt
+from ..database.user_roles import UserRole
 from ..utils.helper_classes import CustomHTTPException
 
 security = HTTPBearer()
@@ -59,4 +60,25 @@ class LoginRequired:
                 detail={"success": False, "message": "Token not provided or invalid"},
                 status_code=400,
             )
+
         return current_user
+
+
+def get_user_with_refresh_token(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+    r_sign: str = Cookie(None),
+):
+    token = (
+        credentials.credentials + "." + r_sign
+        if r_sign is not None
+        else credentials.credentials
+    )
+
+    try:
+        current_user = decode_jwt(token, list(UserRole), type="refresh")
+    except:
+        raise CustomHTTPException(
+            detail={"success": False, "message": "Token not provided or invalid"},
+            status_code=403,
+        )
+    return current_user

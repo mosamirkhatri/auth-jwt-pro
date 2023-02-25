@@ -1,23 +1,18 @@
 import React from "react";
 import { Routes, Route } from "react-router-dom";
+import PrivateRoute from "./PrivateRoute";
 // Pages
-import LoginPage from "../Pages/Login";
+const LoginPage = React.lazy(() => import("../Pages/Login"));
+const ProtectedPage = React.lazy(() => import("../Pages/Protected"));
 
-const AppRouter = () => {
+export default function AppRouter() {
   return (
     <Routes>
       {/* <Route path="/" element={<PublicPage />} /> */}
       <Route path="/login" element={<LoginPage />} />
-      {/* <Route
-            path="/protected"
-            element={
-              <RequireAuth>
-                <ProtectedPage />
-              </RequireAuth>
-            }
-          /> */}
+      <Route path="/protected" element={<PrivateRoute />}>
+        <Route path="" element={<ProtectedPage />} />
+      </Route>
     </Routes>
   );
-};
-
-export default AppRouter;
+}

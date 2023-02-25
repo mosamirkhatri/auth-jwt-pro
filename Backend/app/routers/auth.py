@@ -5,9 +5,8 @@ from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
 
 # Import from files
-from ..core.utils.config import Config
-from ..core.auth.auth_bearer import LoginRequired
-from ..core.auth.auth_handler import sign_jwt
+from ..core.auth.auth_bearer import LoginRequired, get_user_with_refresh_token
+from ..core.auth.auth_handler import generate_auth_response
 from ..core.database.users import USERS
 from ..core.database.user_roles import UserRole
 
@@ -45,34 +44,25 @@ def read_current_user(credentials: HTTPBasicCredentials = Depends(security)):
     username = credentials.username.strip().lower()
     password = credentials.password
     verified_user = None
+
     for user in USERS:
         if user.get("username") == username:
             verified_user = user
             break
+
     if verified_user is None:
         return JSONResponse(
             content={"success": False, "message": "User Not Found"},
             status_code=404,
         )
+
     if verified_user.get("password") != password:
         return JSONResponse(
             content={"success": False, "message": "Credentials Mismatch"},
             status_code=403,
         )
-    token = sign_jwt(verified_user.get("id"), verified_user.get("role"))
-    *access_token, sign = token.split(".")
-    access_token = ".".join(access_token)
-    response = JSONResponse(
-        content={"access_token": access_token, "token_type": "Bearer"}
-    )
-    response.set_cookie(
-        "sign",
-        sign,
-        httponly=True,
-        secure=True,
-        samesite=Config.SAME_SITE_POLICY,
-        expires=Config.ACCESS_TOKEN_EXPIRE_MINUTES * 60 + 300,
-    )
+
+    response = generate_auth_response(verified_user)
     return response
 
 
@@ -98,3 +88,22 @@ def protected_admin(user=Depends(admin_login_required)):
 def protected_mod(user=Depends(mod_login_required)):
     print(user)
     return user
+
+
+@router.post("/refresh")
+def refresh(user=Depends(get_user_with_refresh_token)):
+    verified_user = None
+
+    for saved_user in USERS:
+        if saved_user.get("id") == user.get("user_id"):
+            verified_user = saved_user
+            break
+
+    if verified_user is None:
+        return JSONResponse(
+            content={"success": False, "message": "User Not Found"},
+            status_code=404,
+        )
+
+    response = generate_auth_response(verified_user)
+    return response
