@@ -10,7 +10,7 @@ from ..core.auth.auth_handler import generate_auth_response
 from ..core.database.users import USERS
 from ..core.database.user_roles import UserRole
 
-router = APIRouter(prefix="/auth")
+router = APIRouter(prefix="/api/auth")
 security = HTTPBasic()
 
 
@@ -40,7 +40,7 @@ mod_login_required = LoginRequired([UserRole.MODERATOR])
 
 
 @router.post("/login", tags=["Auth Route"], name="Login")
-def read_current_user(credentials: HTTPBasicCredentials = Depends(security)):
+def login(credentials: HTTPBasicCredentials = Depends(security)):
     username = credentials.username.strip().lower()
     password = credentials.password
     verified_user = None
@@ -60,6 +60,25 @@ def read_current_user(credentials: HTTPBasicCredentials = Depends(security)):
         return JSONResponse(
             content={"success": False, "message": "Credentials Mismatch"},
             status_code=403,
+        )
+
+    response = generate_auth_response(verified_user)
+    return response
+
+
+@router.post("/refresh")
+def refresh(user=Depends(get_user_with_refresh_token)):
+    verified_user = None
+
+    for saved_user in USERS:
+        if saved_user.get("id") == user.get("user_id"):
+            verified_user = saved_user
+            break
+
+    if verified_user is None:
+        return JSONResponse(
+            content={"success": False, "message": "User Not Found"},
+            status_code=404,
         )
 
     response = generate_auth_response(verified_user)
@@ -88,22 +107,3 @@ def protected_admin(user=Depends(admin_login_required)):
 def protected_mod(user=Depends(mod_login_required)):
     print(user)
     return user
-
-
-@router.post("/refresh")
-def refresh(user=Depends(get_user_with_refresh_token)):
-    verified_user = None
-
-    for saved_user in USERS:
-        if saved_user.get("id") == user.get("user_id"):
-            verified_user = saved_user
-            break
-
-    if verified_user is None:
-        return JSONResponse(
-            content={"success": False, "message": "User Not Found"},
-            status_code=404,
-        )
-
-    response = generate_auth_response(verified_user)
-    return response

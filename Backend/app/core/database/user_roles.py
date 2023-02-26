@@ -6,3 +6,4 @@ class UserRole(str, Enum):
     ADMIN = "admin"
     USER = "user"
     MODERATOR = "moderator"
+    READ_ONLY = "read_only"
