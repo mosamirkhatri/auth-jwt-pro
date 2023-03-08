@@ -1,14 +1,16 @@
 # Library Imports
-from fastapi import APIRouter, Depends
+import json
+from fastapi import APIRouter, Depends, Request, Body
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
-
 
 # Import from files
 from ..core.auth.auth_bearer import LoginRequired, get_user_with_refresh_token
 from ..core.auth.auth_handler import generate_auth_response
 from ..core.database.users import USERS
 from ..core.database.user_roles import UserRole
+from ..core.utils.schemas import AdminTest
+from ..core.utils.helpers import decrypt_rsa
 
 router = APIRouter(prefix="/api/auth")
 security = HTTPBasic()
@@ -99,6 +101,24 @@ def protected_user(user=Depends(user_login_required)):
 def protected_admin(user=Depends(admin_login_required)):
     print(user)
     return user
+
+
+async def decrypt(data: str = Body()):
+    print(data)
+    return json.loads(decrypt_rsa(data).decode("utf-8"))
+
+
+@router.post(
+    "/protected-admin-request",
+    tags=["Login Required Routes"],
+    name="Post Login - Admin",
+)
+# def protected_admin(data: AdminTest, user=Depends(admin_login_required)):
+def prostected_admin(data=Depends(decrypt), user=Depends(admin_login_required)):
+    AdminTest(**data)
+    print("RequestData", data)
+    print("UserData", user)
+    return "Working"
 
 
 @router.post(

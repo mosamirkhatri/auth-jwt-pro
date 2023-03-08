@@ -12,3 +12,8 @@ venv/
 
 # Env Variables
 .env
+
+# Keys
+private_key.pem
+
+public_key.pem

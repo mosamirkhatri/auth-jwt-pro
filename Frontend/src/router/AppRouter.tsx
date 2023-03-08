@@ -8,7 +8,7 @@ const ProtectedPage = React.lazy(() => import("../Pages/Protected"));
 export default function AppRouter() {
   return (
     <Routes>
-      {/* <Route path="/" element={<PublicPage />} /> */}
+      <Route path="/" element={<LoginPage />} />
       <Route path="/login" element={<LoginPage />} />
       <Route path="/protected" element={<PrivateRoute />}>
         <Route path="" element={<ProtectedPage />} />

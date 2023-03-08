@@ -19,5 +19,10 @@ USERS = [
     {"id": 8, "username": "evasquez", "role": "moderator", "password": "uv^7KGDq^a"},
     {"id": 9, "username": "tmurphy", "role": "admin", "password": "^33cUfqpy2"},
     {"id": 10, "username": "jacob21", "role": "moderator", "password": "RuH&gByv^3"},
-    {"id": 11, "username": "samir", "role": "admin", "password": "password"},
+    {
+        "id": 11,
+        "username": "m.samir.khatri@gmail.com",
+        "role": "admin",
+        "password": "password",
+    },
 ]

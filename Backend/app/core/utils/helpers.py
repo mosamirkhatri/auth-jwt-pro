@@ -1,9 +1,34 @@
+# Std Lib
+from base64 import b64decode
+import json
+
 # From Library
 from fastapi import Request
 from fastapi.responses import JSONResponse
+from Crypto.Cipher import PKCS1_v1_5
+from Crypto.PublicKey import RSA
+
 
 # Imports from files
 from .helper_classes import CustomHTTPException
+
+
+def get_private_key():
+    with open("private_key.pem") as file:
+        return file.read()
+
+
+from .config import Config
+
+
+def decrypt_rsa(encrypted_data):
+    if not encrypted_data:
+        return {}
+    data = b64decode(encrypted_data)
+    key = RSA.import_key(Config.ASSYM_PRIVATE_KEY)
+    cipher = PKCS1_v1_5.new(key)
+    message = cipher.decrypt(data, None)
+    return message
 
 
 def handle_decoding_error(_: Request, exc: CustomHTTPException):
