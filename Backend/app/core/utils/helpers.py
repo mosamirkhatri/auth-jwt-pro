@@ -45,4 +45,4 @@ def validate_request(ModelCls, request_body):
     try:
         ModelCls(**request_body)
     except ValidationError as e:
-        raise CustomHTTPException(status_code=400, detail=e.json())
+        raise CustomHTTPException(status_code=400, detail=e.errors())

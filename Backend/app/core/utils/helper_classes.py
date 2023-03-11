@@ -1,4 +1,6 @@
-import typing, http
+import typing, http, json
+from fastapi import Body
+from pydantic import BaseModel
 
 # from starlette.types import ASGIApp, Message, Scope, Receive, Send
 
@@ -15,7 +17,18 @@ class CustomHTTPException(Exception):
         return f"{class_name}(status_code={self.status_code!r}, detail={self.detail!r})"
 
 
-# from .helpers import decrypt_rsa
+from .helpers import decrypt_rsa, validate_request
+
+
+class DecryptRequest:
+    def __init__(self, ModelCls: typing.Callable):
+        self.ModelCls = ModelCls
+
+    def __call__(self, data: str = Body()):
+        decoded_data = json.loads(decrypt_rsa(data).decode("utf-8"))
+        validate_request(self.ModelCls, decoded_data)
+
+        return decoded_data
 
 
 # class DecryptionMiddleware:

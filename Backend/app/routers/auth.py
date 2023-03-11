@@ -1,6 +1,6 @@
 # Library Imports
 import json
-from fastapi import APIRouter, Depends, Request, Body
+from fastapi import APIRouter, Depends
 from fastapi.responses import JSONResponse
 from fastapi.security import HTTPBasic, HTTPBasicCredentials
 
@@ -9,8 +9,9 @@ from ..core.auth.auth_bearer import LoginRequired, get_user_with_refresh_token
 from ..core.auth.auth_handler import generate_auth_response
 from ..core.database.users import USERS
 from ..core.database.user_roles import UserRole
-from ..core.utils.schemas import AdminTest
+from ..core.utils.schemas import AdminTest, Login
 from ..core.utils.helpers import decrypt_json, validate_request
+from ..core.utils.helper_classes import DecryptRequest
 
 router = APIRouter(prefix="/auth")
 security = HTTPBasic()
@@ -25,6 +26,7 @@ def router_test():
 user_login_required = LoginRequired([UserRole.USER])
 admin_login_required = LoginRequired([UserRole.ADMIN])
 mod_login_required = LoginRequired([UserRole.MODERATOR])
+all_roles_login_required = LoginRequired(list(UserRole))
 
 # from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 # oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
@@ -41,10 +43,37 @@ mod_login_required = LoginRequired([UserRole.MODERATOR])
 #     return {"data": "my_protected_data"}
 
 
-@router.post("/login", tags=["Auth Route"], name="Login")
+@router.post("/login-basic", tags=["Auth Route"], name="Login")
 def login(credentials: HTTPBasicCredentials = Depends(security)):
     username = credentials.username.strip().lower()
     password = credentials.password
+    verified_user = None
+
+    for user in USERS:
+        if user.get("username") == username:
+            verified_user = user
+            break
+
+    if verified_user is None:
+        return JSONResponse(
+            content={"success": False, "message": "User Not Found"},
+            status_code=404,
+        )
+
+    if verified_user.get("password") != password:
+        return JSONResponse(
+            content={"success": False, "message": "Credentials Mismatch"},
+            status_code=403,
+        )
+
+    response = generate_auth_response(verified_user)
+    return response
+
+
+@router.post("/login", tags=["Auth Route"], name="Login")
+def login(credentials=Depends(DecryptRequest(Login))):
+    username = credentials.get("username").strip().lower()
+    password = credentials.get("password")
     verified_user = None
 
     for user in USERS:
@@ -87,20 +116,21 @@ def refresh(user=Depends(get_user_with_refresh_token)):
     return response
 
 
-@router.post(
-    "/protected-user", tags=["Login Required Routes"], name="Post Login - User"
-)
-def protected_user(user=Depends(user_login_required)):
-    print(user)
-    return user
+@router.post("/check-auth", tags=["Login Required Routes"], name="Post Login - User")
+def get_authenticated_user(user=Depends(all_roles_login_required)):
+    verified_user = None
 
+    for saved_user in USERS:
+        if saved_user.get("id") == user.get("user_id"):
+            verified_user = saved_user
+            break
 
-@router.post(
-    "/protected-admin", tags=["Login Required Routes"], name="Post Login - Admin"
-)
-def protected_admin(user=Depends(admin_login_required)):
-    print(user)
-    return user
+    if verified_user is None:
+        return JSONResponse(
+            content={"success": False, "message": "User Not Found"},
+            status_code=404,
+        )
+    return {"email": verified_user.get("email"), "role": verified_user.get("role")}
 
 
 @router.post(
@@ -108,17 +138,9 @@ def protected_admin(user=Depends(admin_login_required)):
     tags=["Login Required Routes"],
     name="Post Login - Admin",
 )
-# def protected_admin(data: AdminTest, user=Depends(admin_login_required)):
-def prostected_admin(data=Depends(decrypt_json), user=Depends(admin_login_required)):
-    validate_request(AdminTest, data)
+def prostected_admin(
+    data=Depends(DecryptRequest(AdminTest)), user=Depends(admin_login_required)
+):
     print("RequestData", data)
     print("UserData", user)
     return "Working"
-
-
-@router.post(
-    "/protected-mod", tags=["Login Required Routes"], name="Post Login - Moderator"
-)
-def protected_mod(user=Depends(mod_login_required)):
-    print(user)
-    return user
