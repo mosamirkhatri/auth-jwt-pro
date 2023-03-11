@@ -2,8 +2,8 @@ import React from "react";
 import { Routes, Route } from "react-router-dom";
 import PrivateRoute from "./PrivateRoute";
 // Pages
-const LoginPage = React.lazy(() => import("../Pages/Login"));
-const ProtectedPage = React.lazy(() => import("../Pages/Protected"));
+const LoginPage = React.lazy(() => import("../pages/Login"));
+const ProtectedPage = React.lazy(() => import("../pages/Protected"));
 
 export default function AppRouter() {
   return (
