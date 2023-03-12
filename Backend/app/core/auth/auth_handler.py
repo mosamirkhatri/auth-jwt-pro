@@ -65,7 +65,7 @@ def generate_auth_response(user):
         httponly=True,
         secure=True,
         samesite=Config.SAME_SITE_POLICY,
-        expires=Config.ACCESS_TOKEN_EXPIRE_MINUTES * 60 + 300,
+        max_age=Config.ACCESS_TOKEN_EXPIRE_MINUTES * 60 + 300,
     )
 
     response.set_cookie(
@@ -74,7 +74,7 @@ def generate_auth_response(user):
         httponly=True,
         secure=True,
         samesite=Config.SAME_SITE_POLICY,
-        expires=Config.REFRESH_TOKEN_EXPIRE_MINUTES * 60 + 300,
+        max_age=Config.REFRESH_TOKEN_EXPIRE_MINUTES * 60 + 300,
     )
 
     return response

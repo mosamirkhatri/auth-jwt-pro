@@ -5,8 +5,8 @@ import { useAuthStore } from "../store/authStore";
 
 export default function PrivateRoute() {
   const location = useLocation();
-  // const { isLoggedIn: isAuthenticated } = useAuthStore();
-  let isAuthenticated = true;
+  const { isLoggedIn: isAuthenticated } = useAuthStore();
+  // let isAuthenticated = true;
   return isAuthenticated ? (
     <Outlet />
   ) : (

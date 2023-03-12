@@ -66,8 +66,14 @@ export default function AuthForm(props: PaperProps) {
                 const cookies = new Cookies();
                 const accessToken = data.access_token;
                 const refreshToken = data.refresh_token;
-                cookies.set("token", accessToken);
-                cookies.set("r_token", refreshToken);
+                cookies.set("token", accessToken, {
+                  maxAge:
+                    +import.meta.env.VITE_ACCESS_TOKEN_EXPIRE_MINUTES * 60,
+                });
+                cookies.set("r_token", refreshToken, {
+                  maxAge:
+                    +import.meta.env.VITE_REFRESH_TOKEN_EXPIRE_MINUTES * 60,
+                });
               })
               .then(() => handleLogin(email, null, null))
               .then(() => navigate("/protected"));

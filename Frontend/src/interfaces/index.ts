@@ -9,4 +9,5 @@ export interface IAuthState {
     role: string | null
   ) => void;
   handleLogout: () => void;
+  handleGetLoggedInUser: () => Promise<void>;
 }

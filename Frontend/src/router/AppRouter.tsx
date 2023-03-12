@@ -4,6 +4,7 @@ import PrivateRoute from "./PrivateRoute";
 // Pages
 const LoginPage = React.lazy(() => import("../pages/Login"));
 const ProtectedPage = React.lazy(() => import("../pages/Protected"));
+const ExplorePage = React.lazy(() => import("../pages/Explore"));
 
 export default function AppRouter() {
   return (
@@ -12,6 +13,9 @@ export default function AppRouter() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/protected" element={<PrivateRoute />}>
         <Route path="" element={<ProtectedPage />} />
+      </Route>
+      <Route path="/explore" element={<PrivateRoute />}>
+        <Route path="" element={<ExplorePage />} />
       </Route>
     </Routes>
   );

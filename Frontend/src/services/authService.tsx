@@ -11,12 +11,20 @@ type LoginResponse = {
 };
 
 export function handleLogin({ username, password }: User) {
-  return axios.post<null, LoginResponse>("/auth/login", null, {
-    headers: {
-      Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString(
-        "base64"
-      )}`,
-    },
-  });
+  return axios.post<null, LoginResponse>(
+    "/auth/login",
+    { username, password },
+    {
+      headers: {
+        Authorization: `Basic ${Buffer.from(`${username}:${password}`).toString(
+          "base64"
+        )}`,
+      },
+    }
+  );
 }
 export function handleRegister() {}
+
+export function getLoggedInUser() {
+  return axios.post("/auth/check-auth");
+}
